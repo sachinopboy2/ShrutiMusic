@@ -20,23 +20,26 @@ DEFAULT_THUMB = "ShrutiMusic/assets/ShrutiBots.jpg"
 
 
 def wrap_text(draw, text, font, max_width):
-    words = text.split()
-    lines = []
-    current_line = ""
-    
-    for word in words:
-        test_line = current_line + (" " if current_line else "") + word
-        if draw.textlength(test_line, font=font) <= max_width:
-            current_line = test_line
-        else:
-            if current_line:
-                lines.append(current_line)
-            current_line = word
-    
-    if current_line:
-        lines.append(current_line)
-    
-    return lines[:2]
+    try:
+        words = text.split()
+        lines = []
+        current_line = ""
+        
+        for word in words:
+            test_line = current_line + (" " if current_line else "") + word
+            if draw.textlength(test_line, font=font) <= max_width:
+                current_line = test_line
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = word
+        
+        if current_line:
+            lines.append(current_line)
+        
+        return lines[:2] if lines else ["Music"]
+    except:
+        return ["Music"]
 
 
 def random_gradient():
@@ -56,84 +59,103 @@ def random_gradient():
 
 
 def apply_gradient(canvas, colors):
-    overlay = Image.new('RGBA', canvas.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-    
-    for y in range(CANVAS_H):
-        progress = y / CANVAS_H
+    try:
+        overlay = Image.new('RGBA', canvas.size, (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
         
-        if progress < 0.4:
-            t = progress / 0.4
-            r = int(colors[0][0] * (1-t) + colors[1][0] * t)
-            g = int(colors[0][1] * (1-t) + colors[1][1] * t)
-            b = int(colors[0][2] * (1-t) + colors[1][2] * t)
-        else:
-            t = (progress - 0.4) / 0.6
-            r = int(colors[1][0] * (1-t) + colors[2][0] * t)
-            g = int(colors[1][1] * (1-t) + colors[2][1] * t)
-            b = int(colors[1][2] * (1-t) + colors[2][2] * t)
+        for y in range(CANVAS_H):
+            progress = y / CANVAS_H
+            
+            if progress < 0.4:
+                t = progress / 0.4
+                r = int(colors[0][0] * (1-t) + colors[1][0] * t)
+                g = int(colors[0][1] * (1-t) + colors[1][1] * t)
+                b = int(colors[0][2] * (1-t) + colors[1][2] * t)
+            else:
+                t = (progress - 0.4) / 0.6
+                r = int(colors[1][0] * (1-t) + colors[2][0] * t)
+                g = int(colors[1][1] * (1-t) + colors[2][1] * t)
+                b = int(colors[1][2] * (1-t) + colors[2][2] * t)
+            
+            draw.line([(0, y), (CANVAS_W, y)], fill=(r, g, b, 255))
         
-        draw.line([(0, y), (CANVAS_W, y)], fill=(r, g, b, 255))
-    
-    return Image.alpha_composite(canvas, overlay)
+        return Image.alpha_composite(canvas, overlay)
+    except:
+        return canvas
 
 
 def random_layout():
-    layouts = [
-        {
-            'art_size': random.randint(420, 520),
-            'art_x': random.randint(60, 120),
-            'art_shape': random.choice(['circle', 'rounded', 'diamond']),
+    try:
+        layouts = [
+            {
+                'art_size': random.randint(420, 520),
+                'art_x': random.randint(60, 120),
+                'art_shape': random.choice(['circle', 'rounded', 'diamond']),
+                'text_align': 'right',
+                'accent_style': random.choice(['line', 'dot', 'wave']),
+                'show_particles': random.choice([True, False])
+            },
+            {
+                'art_size': random.randint(400, 500),
+                'art_x': CANVAS_W - random.randint(520, 620),
+                'art_shape': random.choice(['circle', 'rounded', 'square']),
+                'text_align': 'left',
+                'accent_style': random.choice(['line', 'glow', 'none']),
+                'show_particles': random.choice([True, False])
+            },
+            {
+                'art_size': random.randint(380, 480),
+                'art_x': random.randint(80, 140),
+                'art_shape': random.choice(['circle', 'hexagon', 'rounded']),
+                'text_align': 'right',
+                'accent_style': random.choice(['dot', 'wave', 'glow']),
+                'show_particles': random.choice([True, False])
+            }
+        ]
+        return random.choice(layouts)
+    except:
+        return {
+            'art_size': 450,
+            'art_x': 100,
+            'art_shape': 'circle',
             'text_align': 'right',
-            'accent_style': random.choice(['line', 'dot', 'wave']),
-            'show_particles': random.choice([True, False])
-        },
-        {
-            'art_size': random.randint(400, 500),
-            'art_x': CANVAS_W - random.randint(520, 620),
-            'art_shape': random.choice(['circle', 'rounded', 'square']),
-            'text_align': 'left',
-            'accent_style': random.choice(['line', 'glow', 'none']),
-            'show_particles': random.choice([True, False])
-        },
-        {
-            'art_size': random.randint(380, 480),
-            'art_x': random.randint(80, 140),
-            'art_shape': random.choice(['circle', 'hexagon', 'rounded']),
-            'text_align': 'right',
-            'accent_style': random.choice(['dot', 'wave', 'glow']),
-            'show_particles': random.choice([True, False])
+            'accent_style': 'line',
+            'show_particles': False
         }
-    ]
-    return random.choice(layouts)
 
 
 def create_shape_mask(size, shape):
-    mask = Image.new("L", (size, size), 0)
-    draw = ImageDraw.Draw(mask)
-    
-    if shape == 'circle':
+    try:
+        mask = Image.new("L", (size, size), 0)
+        draw = ImageDraw.Draw(mask)
+        
+        if shape == 'circle':
+            draw.ellipse([0, 0, size, size], fill=255)
+        elif shape == 'rounded':
+            radius = random.randint(40, 80)
+            draw.rounded_rectangle([0, 0, size, size], radius=radius, fill=255)
+        elif shape == 'square':
+            draw.rectangle([0, 0, size, size], fill=255)
+        elif shape == 'diamond':
+            points = [(size//2, 0), (size, size//2), (size//2, size), (0, size//2)]
+            draw.polygon(points, fill=255)
+        elif shape == 'hexagon':
+            center = size // 2
+            radius = size // 2 - 10
+            points = []
+            for i in range(6):
+                angle = math.pi / 3 * i
+                x = center + radius * math.cos(angle)
+                y = center + radius * math.sin(angle)
+                points.append((x, y))
+            draw.polygon(points, fill=255)
+        
+        return mask
+    except:
+        mask = Image.new("L", (size, size), 0)
+        draw = ImageDraw.Draw(mask)
         draw.ellipse([0, 0, size, size], fill=255)
-    elif shape == 'rounded':
-        radius = random.randint(40, 80)
-        draw.rounded_rectangle([0, 0, size, size], radius=radius, fill=255)
-    elif shape == 'square':
-        draw.rectangle([0, 0, size, size], fill=255)
-    elif shape == 'diamond':
-        points = [(size//2, 0), (size, size//2), (size//2, size), (0, size//2)]
-        draw.polygon(points, fill=255)
-    elif shape == 'hexagon':
-        center = size // 2
-        radius = size // 2 - 10
-        points = []
-        for i in range(6):
-            angle = math.pi / 3 * i
-            x = center + radius * math.cos(angle)
-            y = center + radius * math.sin(angle)
-            points.append((x, y))
-        draw.polygon(points, fill=255)
-    
-    return mask
+        return mask
 
 
 def random_accent_color():
@@ -153,110 +175,130 @@ def random_accent_color():
 
 
 def add_particles(draw, accent_color):
-    for _ in range(random.randint(15, 30)):
-        x = random.randint(0, CANVAS_W)
-        y = random.randint(0, CANVAS_H)
-        size = random.randint(1, 4)
-        alpha = random.randint(40, 120)
-        draw.ellipse([x, y, x+size, y+size], fill=(*accent_color, alpha))
+    try:
+        for _ in range(random.randint(15, 30)):
+            x = random.randint(0, CANVAS_W)
+            y = random.randint(0, CANVAS_H)
+            size = random.randint(1, 4)
+            alpha = random.randint(40, 120)
+            draw.ellipse([x, y, x+size, y+size], fill=(*accent_color, alpha))
+    except:
+        pass
 
 
 def add_accent_elements(draw, layout, accent_color):
-    style = layout['accent_style']
-    
-    if style == 'line':
-        y_pos = random.randint(100, 200)
-        x_start = random.randint(30, 100)
-        length = random.randint(200, 400)
-        width = random.randint(2, 4)
-        draw.line([(x_start, y_pos), (x_start + length, y_pos)], 
-                 fill=(*accent_color, 180), width=width)
-    
-    elif style == 'dot':
-        for _ in range(random.randint(3, 8)):
-            x = random.randint(40, CANVAS_W - 40)
-            y = random.randint(40, CANVAS_H - 40)
-            size = random.randint(4, 10)
-            draw.ellipse([x, y, x+size, y+size], fill=(*accent_color, 100))
-    
-    elif style == 'wave':
-        y_start = random.randint(80, 150)
-        for x in range(0, CANVAS_W, 3):
-            wave_y = y_start + int(math.sin(x / 50) * 20)
-            draw.ellipse([x, wave_y, x+2, wave_y+2], fill=(*accent_color, 60))
+    try:
+        style = layout.get('accent_style', 'none')
+        
+        if style == 'line':
+            y_pos = random.randint(100, 200)
+            x_start = random.randint(30, 100)
+            length = random.randint(200, 400)
+            width = random.randint(2, 4)
+            draw.line([(x_start, y_pos), (x_start + length, y_pos)], 
+                     fill=(*accent_color, 180), width=width)
+        
+        elif style == 'dot':
+            for _ in range(random.randint(3, 8)):
+                x = random.randint(40, CANVAS_W - 40)
+                y = random.randint(40, CANVAS_H - 40)
+                size = random.randint(4, 10)
+                draw.ellipse([x, y, x+size, y+size], fill=(*accent_color, 100))
+        
+        elif style == 'wave':
+            y_start = random.randint(80, 150)
+            for x in range(0, CANVAS_W, 3):
+                wave_y = y_start + int(math.sin(x / 50) * 20)
+                draw.ellipse([x, wave_y, x+2, wave_y+2], fill=(*accent_color, 60))
+    except:
+        pass
 
 
 def add_glow_ring(canvas, x, y, size, color, blur_amount):
-    ring_size = size + 30
-    ring_img = Image.new("RGBA", (ring_size, ring_size), (0, 0, 0, 0))
-    rdraw = ImageDraw.Draw(ring_img)
-    
-    for i in range(5):
-        offset = i * 5
-        alpha = 150 - (i * 30)
-        rdraw.ellipse([offset, offset, ring_size - offset, ring_size - offset],
-                     outline=(*color, alpha), width=3)
-    
-    ring_img = ring_img.filter(ImageFilter.GaussianBlur(blur_amount))
-    canvas.paste(ring_img, (x - 15, y - 15), ring_img)
+    try:
+        ring_size = size + 30
+        ring_img = Image.new("RGBA", (ring_size, ring_size), (0, 0, 0, 0))
+        rdraw = ImageDraw.Draw(ring_img)
+        
+        for i in range(5):
+            offset = i * 5
+            alpha = 150 - (i * 30)
+            rdraw.ellipse([offset, offset, ring_size - offset, ring_size - offset],
+                         outline=(*color, alpha), width=3)
+        
+        ring_img = ring_img.filter(ImageFilter.GaussianBlur(blur_amount))
+        canvas.paste(ring_img, (x - 15, y - 15), ring_img)
+    except:
+        pass
 
 
 async def gen_thumb(videoid: str):
     url = f"https://www.youtube.com/watch?v={videoid}"
     thumb_path = None
+    yt_thumb_url = None
+    
+    title = "ShrutiMusic"
+    duration = "Unknown"
+    views = "Unknown Views"
+    channel = "ShrutiBots"
+    base_img = None
     
     try:
         results = VideosSearch(url, limit=1)
         result_data = await results.next()
         
-        if not result_data or "result" not in result_data or not result_data["result"]:
-            raise Exception("No search results found")
-        
-        result = result_data["result"][0]
+        if result_data and isinstance(result_data, dict):
+            if "result" in result_data and result_data["result"]:
+                result = result_data["result"][0]
+                
+                try:
+                    title = result.get("title", title)
+                except:
+                    pass
+                
+                try:
+                    duration = result.get("duration", duration)
+                except:
+                    pass
+                
+                try:
+                    if "thumbnails" in result and result["thumbnails"]:
+                        yt_thumb_url = result["thumbnails"][0].get("url", "").split("?")[0]
+                        if yt_thumb_url:
+                            async with aiohttp.ClientSession() as session:
+                                async with session.get(yt_thumb_url, timeout=10) as resp:
+                                    if resp.status == 200:
+                                        thumb_path = CACHE_DIR / f"thumb{videoid}.png"
+                                        async with aiofiles.open(thumb_path, "wb") as f:
+                                            await f.write(await resp.read())
+                except:
+                    pass
+                
+                try:
+                    if "viewCount" in result and result["viewCount"]:
+                        views = result["viewCount"].get("short", views)
+                except:
+                    pass
+                
+                try:
+                    if "channel" in result and result["channel"]:
+                        channel = result["channel"].get("name", channel)
+                except:
+                    pass
+    except:
+        pass
 
-        title = result.get("title", "Unknown Title")
-        duration = result.get("duration", "Unknown")
-        
-        thumburl = None
-        if "thumbnails" in result and result["thumbnails"]:
-            thumburl = result["thumbnails"][0].get("url", "").split("?")[0]
-        
-        views = "Unknown Views"
-        if "viewCount" in result and result["viewCount"]:
-            views = result["viewCount"].get("short", "Unknown Views")
-        
-        channel = "Unknown Channel"
-        if "channel" in result and result["channel"]:
-            channel = result["channel"].get("name", "Unknown Channel")
+    if not thumb_path or not thumb_path.exists():
+        if yt_thumb_url:
+            return yt_thumb_url
+        return f"https://img.youtube.com/vi/{videoid}/maxresdefault.jpg"
 
-        if thumburl:
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(thumburl) as resp:
-                        if resp.status == 200:
-                            thumb_path = CACHE_DIR / f"thumb{videoid}.png"
-                            async with aiofiles.open(thumb_path, "wb") as f:
-                                await f.write(await resp.read())
-            except Exception as e:
-                print(f"[Thumbnail download failed] {e}")
-
-        if thumb_path and thumb_path.exists():
-            base_img = Image.open(thumb_path).convert("RGBA")
-        else:
-            base_img = Image.open(DEFAULT_THUMB).convert("RGBA")
-
-    except Exception as e:
-        print(f"[gen_thumb Error - Using Default] {e}")
-        try:
-            base_img = Image.open(DEFAULT_THUMB).convert("RGBA")
-            title = "ShrutiMusic"
-            duration = "Unknown"
-            views = "Unknown Views"
-            channel = "ShrutiBots"
-        except Exception as fallback_error:
-            print(f"[Critical Error - Cannot load default] {fallback_error}")
-            traceback.print_exc()
-            return None
+    try:
+        base_img = Image.open(thumb_path).convert("RGBA")
+    except:
+        if yt_thumb_url:
+            return yt_thumb_url
+        return f"https://img.youtube.com/vi/{videoid}/maxresdefault.jpg"
 
     try:
         canvas = Image.new("RGBA", (CANVAS_W, CANVAS_H), (0, 0, 0, 255))
@@ -267,16 +309,19 @@ async def gen_thumb(videoid: str):
         layout = random_layout()
         accent_color = random_accent_color()
         
-        if layout['show_particles']:
+        if layout.get('show_particles', False):
             draw = ImageDraw.Draw(canvas)
             add_particles(draw, accent_color)
-            canvas = canvas.filter(ImageFilter.GaussianBlur(1))
+            try:
+                canvas = canvas.filter(ImageFilter.GaussianBlur(1))
+            except:
+                pass
         
-        art_size = layout['art_size']
-        art_x = layout['art_x']
+        art_size = layout.get('art_size', 450)
+        art_x = layout.get('art_x', 100)
         art_y = (CANVAS_H - art_size) // 2
         
-        mask = create_shape_mask(art_size, layout['art_shape'])
+        mask = create_shape_mask(art_size, layout.get('art_shape', 'circle'))
         art = base_img.resize((art_size, art_size), Image.LANCZOS)
         art.putalpha(mask)
         
@@ -289,90 +334,125 @@ async def gen_thumb(videoid: str):
         
         add_accent_elements(draw, layout, accent_color)
         
-        brand_font = ImageFont.truetype(FONT_BOLD_PATH, random.randint(36, 48))
+        try:
+            brand_font = ImageFont.truetype(FONT_BOLD_PATH, random.randint(36, 48))
+        except:
+            brand_font = ImageFont.load_default()
+        
         brand_x = random.randint(35, 60)
         brand_y = random.randint(25, 45)
         
-        shadow_offset = 2
-        draw.text((brand_x + shadow_offset, brand_y + shadow_offset), 
-                 app.username, fill=(0, 0, 0, 150), font=brand_font)
-        draw.text((brand_x, brand_y), app.username, fill=(255, 255, 255, 255), font=brand_font)
+        try:
+            brand_text = app.username
+        except:
+            brand_text = "ShrutiMusic"
         
-        brand_bbox = draw.textbbox((brand_x, brand_y), app.username, font=brand_font)
-        brand_w = brand_bbox[2] - brand_bbox[0]
-        underline_y = brand_bbox[3] + 6
-        draw.line([(brand_x, underline_y), (brand_x + brand_w, underline_y)], 
-                 fill=(*accent_color, 200), width=3)
+        try:
+            shadow_offset = 2
+            draw.text((brand_x + shadow_offset, brand_y + shadow_offset), 
+                     brand_text, fill=(0, 0, 0, 150), font=brand_font)
+            draw.text((brand_x, brand_y), brand_text, fill=(255, 255, 255, 255), font=brand_font)
+        except:
+            pass
         
-        if layout['text_align'] == 'right':
+        try:
+            brand_bbox = draw.textbbox((brand_x, brand_y), brand_text, font=brand_font)
+            brand_w = brand_bbox[2] - brand_bbox[0]
+            underline_y = brand_bbox[3] + 6
+            draw.line([(brand_x, underline_y), (brand_x + brand_w, underline_y)], 
+                     fill=(*accent_color, 200), width=3)
+        except:
+            pass
+        
+        text_align = layout.get('text_align', 'right')
+        if text_align == 'right':
             info_x = art_x + art_size + random.randint(60, 100)
             max_text_w = CANVAS_W - info_x - 50
         else:
             info_x = random.randint(50, 100)
             max_text_w = art_x - info_x - 50
         
-        np_options = ["NOW PLAYING", "PLAYING NOW", "NOW PLAYING", "PLAYING"]
-        np_font = ImageFont.truetype(FONT_BOLD_PATH, random.randint(50, 70))
-        np_text = random.choice(np_options)
-        np_y = random.randint(120, 160)
+        try:
+            np_options = ["NOW PLAYING", "PLAYING NOW", "NOW PLAYING", "PLAYING"]
+            np_font = ImageFont.truetype(FONT_BOLD_PATH, random.randint(50, 70))
+            np_text = random.choice(np_options)
+            np_y = random.randint(120, 160)
+            
+            np_shadow = 3
+            draw.text((info_x + np_shadow, np_y + np_shadow), np_text, 
+                     fill=(0, 0, 0, 180), font=np_font)
+            draw.text((info_x, np_y), np_text, fill=(*accent_color, 255), font=np_font)
+        except:
+            np_y = 140
         
-        np_shadow = 3
-        draw.text((info_x + np_shadow, np_y + np_shadow), np_text, 
-                 fill=(0, 0, 0, 180), font=np_font)
-        draw.text((info_x, np_y), np_text, fill=(*accent_color, 255), font=np_font)
+        try:
+            title_font_size = random.randint(36, 48)
+            title_font = ImageFont.truetype(FONT_BOLD_PATH, title_font_size)
+            title_lines = wrap_text(draw, title, title_font, max_text_w)
+            title_text = "\n".join(title_lines)
+            title_y = np_y + random.randint(70, 100)
+            
+            title_shadow = 2
+            draw.multiline_text((info_x + title_shadow, title_y + title_shadow), title_text, 
+                              fill=(0, 0, 0, 160), font=title_font, 
+                              spacing=random.randint(8, 15))
+            draw.multiline_text((info_x, title_y), title_text, 
+                              fill=(255, 255, 255, 255), font=title_font, 
+                              spacing=random.randint(8, 15))
+        except:
+            title_y = np_y + 80
         
-        title_font_size = random.randint(36, 48)
-        title_font = ImageFont.truetype(FONT_BOLD_PATH, title_font_size)
-        title_lines = wrap_text(draw, title, title_font, max_text_w)
-        title_text = "\n".join(title_lines)
-        title_y = np_y + random.randint(70, 100)
+        try:
+            meta_font = ImageFont.truetype(FONT_REGULAR_PATH, random.randint(28, 36))
+        except:
+            meta_font = ImageFont.load_default()
         
-        title_shadow = 2
-        draw.multiline_text((info_x + title_shadow, title_y + title_shadow), title_text, 
-                          fill=(0, 0, 0, 160), font=title_font, 
-                          spacing=random.randint(8, 15))
-        draw.multiline_text((info_x, title_y), title_text, 
-                          fill=(255, 255, 255, 255), font=title_font, 
-                          spacing=random.randint(8, 15))
-        
-        meta_font = ImageFont.truetype(FONT_REGULAR_PATH, random.randint(28, 36))
         meta_y = title_y + random.randint(120, 160)
         line_spacing = random.randint(45, 60)
         
-        duration_label = duration
-        if duration and ":" in duration:
-            parts = duration.split(":")
-            if len(parts) == 2 and parts[0].isdigit():
-                duration_label = f"{parts[0]}m {parts[1]}s"
+        try:
+            duration_label = duration
+            if duration and ":" in str(duration):
+                parts = str(duration).split(":")
+                if len(parts) == 2 and parts[0].isdigit():
+                    duration_label = f"{parts[0]}m {parts[1]}s"
+        except:
+            duration_label = duration
         
-        meta_labels = random.choice([
-            ["Views", "Duration", "Channel"],
-            ["", "", ""]
-        ])
-        
-        meta_items = [
-            f"{meta_labels[0]} {views}" if meta_labels[0] else f"{views}",
-            f"{meta_labels[1]} {duration_label}" if meta_labels[1] else f"{duration_label}",
-            f"{meta_labels[2]} {channel}" if meta_labels[2] else f"{channel}"
-        ]
-        
-        for idx, meta in enumerate(meta_items):
-            y = meta_y + (idx * line_spacing)
-            draw.text((info_x + 1, y + 1), meta, fill=(0, 0, 0, 140), font=meta_font)
-            draw.text((info_x, y), meta, fill=(220, 220, 230, 255), font=meta_font)
-        
-        if random.choice([True, False]):
-            corner_size = random.randint(30, 50)
-            corner_width = random.randint(2, 4)
-            corner_color = (*accent_color, 120)
+        try:
+            meta_labels = random.choice([
+                ["Views", "Duration", "Channel"],
+                ["", "", ""]
+            ])
             
-            draw.line([(25, 25), (25 + corner_size, 25)], fill=corner_color, width=corner_width)
-            draw.line([(25, 25), (25, 25 + corner_size)], fill=corner_color, width=corner_width)
+            meta_items = [
+                f"{meta_labels[0]} {views}" if meta_labels[0] else f"{views}",
+                f"{meta_labels[1]} {duration_label}" if meta_labels[1] else f"{duration_label}",
+                f"{meta_labels[2]} {channel}" if meta_labels[2] else f"{channel}"
+            ]
             
-            draw.line([(CANVAS_W - 25, 25), (CANVAS_W - 25 - corner_size, 25)], 
-                     fill=corner_color, width=corner_width)
-            draw.line([(CANVAS_W - 25, 25), (CANVAS_W - 25, 25 + corner_size)], 
-                     fill=corner_color, width=corner_width)
+            for idx, meta in enumerate(meta_items):
+                y = meta_y + (idx * line_spacing)
+                draw.text((info_x + 1, y + 1), meta, fill=(0, 0, 0, 140), font=meta_font)
+                draw.text((info_x, y), meta, fill=(220, 220, 230, 255), font=meta_font)
+        except:
+            pass
+        
+        try:
+            if random.choice([True, False]):
+                corner_size = random.randint(30, 50)
+                corner_width = random.randint(2, 4)
+                corner_color = (*accent_color, 120)
+                
+                draw.line([(25, 25), (25 + corner_size, 25)], fill=corner_color, width=corner_width)
+                draw.line([(25, 25), (25, 25 + corner_size)], fill=corner_color, width=corner_width)
+                
+                draw.line([(CANVAS_W - 25, 25), (CANVAS_W - 25 - corner_size, 25)], 
+                         fill=corner_color, width=corner_width)
+                draw.line([(CANVAS_W - 25, 25), (CANVAS_W - 25, 25 + corner_size)], 
+                         fill=corner_color, width=corner_width)
+        except:
+            pass
         
         out = CACHE_DIR / f"{videoid}_final.png"
         canvas.save(out, quality=95, optimize=True)
@@ -385,7 +465,13 @@ async def gen_thumb(videoid: str):
 
         return str(out)
 
-    except Exception as e:
-        print(f"[gen_thumb Processing Error] {e}")
-        traceback.print_exc()
-        return None
+    except:
+        try:
+            if thumb_path and thumb_path.exists():
+                os.remove(thumb_path)
+        except:
+            pass
+        
+        if yt_thumb_url:
+            return yt_thumb_url
+        return f"https://img.youtube.com/vi/{videoid}/maxresdefault.jpg"
