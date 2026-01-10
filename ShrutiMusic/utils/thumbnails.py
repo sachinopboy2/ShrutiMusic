@@ -1,27 +1,3 @@
-# Copyright (c) 2025 Nand Yaduwanshi <NoxxOP>
-# Location: Supaul, Bihar
-#
-# All rights reserved.
-#
-# This code is the intellectual property of Nand Yaduwanshi.
-# You are not allowed to copy, modify, redistribute, or use this
-# code for commercial or personal projects without explicit permission.
-#
-# Allowed:
-# - Forking for personal learning
-# - Submitting improvements via pull requests
-#
-# Not Allowed:
-# - Claiming this code as your own
-# - Re-uploading without credit or permission
-# - Selling or using commercially
-#
-# Contact for permissions:
-# Email: badboy809075@gmail.com
-#
-# ATLEAST GIVE CREDITS IF YOU STEALING :
-# ELSE NO FURTHER PUBLIC THUMBNAIL UPDATES
-
 import os
 import random
 import aiohttp
@@ -231,23 +207,38 @@ async def gen_thumb(videoid: str):
     
     try:
         results = VideosSearch(url, limit=1)
-        result = (await results.next())["result"][0]
+        result_data = await results.next()
+        
+        if not result_data or "result" not in result_data or not result_data["result"]:
+            raise Exception("No search results found")
+        
+        result = result_data["result"][0]
 
         title = result.get("title", "Unknown Title")
         duration = result.get("duration", "Unknown")
-        thumburl = result["thumbnails"][0]["url"].split("?")[0]
-        views = result.get("viewCount", {}).get("short", "Unknown Views")
-        channel = result.get("channel", {}).get("name", "Unknown Channel")
+        
+        thumburl = None
+        if "thumbnails" in result and result["thumbnails"]:
+            thumburl = result["thumbnails"][0].get("url", "").split("?")[0]
+        
+        views = "Unknown Views"
+        if "viewCount" in result and result["viewCount"]:
+            views = result["viewCount"].get("short", "Unknown Views")
+        
+        channel = "Unknown Channel"
+        if "channel" in result and result["channel"]:
+            channel = result["channel"].get("name", "Unknown Channel")
 
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(thumburl) as resp:
-                    if resp.status == 200:
-                        thumb_path = CACHE_DIR / f"thumb{videoid}.png"
-                        async with aiofiles.open(thumb_path, "wb") as f:
-                            await f.write(await resp.read())
-        except:
-            pass
+        if thumburl:
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(thumburl) as resp:
+                        if resp.status == 200:
+                            thumb_path = CACHE_DIR / f"thumb{videoid}.png"
+                            async with aiofiles.open(thumb_path, "wb") as f:
+                                await f.write(await resp.read())
+            except Exception as e:
+                print(f"[Thumbnail download failed] {e}")
 
         if thumb_path and thumb_path.exists():
             base_img = Image.open(thumb_path).convert("RGBA")
@@ -262,7 +253,8 @@ async def gen_thumb(videoid: str):
             duration = "Unknown"
             views = "Unknown Views"
             channel = "ShrutiBots"
-        except:
+        except Exception as fallback_error:
+            print(f"[Critical Error - Cannot load default] {fallback_error}")
             traceback.print_exc()
             return None
 
